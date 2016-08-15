@@ -71,3 +71,16 @@ Export
 ggsave(filename="../DataOut/hk_flat_net_price.png",plot=hk_flat_net_price)
 ```
 
+###ARIMA Modelling
+```{r ARIMA, echo=TRUE, message=FALSE, warning=FALSE}
+library(forecast)
+fit<-auto.arima(flat_net_price)
+summary(fit)
+fitted(fit)
+forecast_fit<-forecast(fit)
+plot(forecast_fit)
+```
+
+
+
+
