@@ -1,0 +1,24 @@
+---
+title: "HK Property Net Price ARIMA Modelling"
+author: "Fung YIP"
+date: "14 August 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## HK Property Net Price ARIMA Modelling
+
+
+
+```{r arima, eval=FALSE, include=FALSE}
+library(forecast)
+fit<-auto.arima(net_price)
+summary(fit)
+fitted(fit)
+forecast_fit<-forecast(fit)
+plot(forecast_fit)
+```
+
