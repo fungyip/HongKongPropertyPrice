@@ -2,7 +2,7 @@
 #install.packages("jsonlite")
 require(jsonlite)
 #############################Data Collection############################
-#####Hong Kong Property Price Movement is sourced from Midland Realty##########################
+#####Hong Kong Property Price Movement is sourced from Midland Realty#############
 url <- "http://resources.midland.com.hk/json/common/price.json?t="
 
 ###########################Web Scraping############################################
