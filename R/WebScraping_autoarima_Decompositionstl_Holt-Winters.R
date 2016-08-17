@@ -64,4 +64,28 @@ decomposition<-autoplot(stl(flat_net_price, s.window="periodic", robust=TRUE))
 #autoplot(stl(lflat_net_price, s.window="periodic", robust=TRUE))
 ggsave(filename="./DataOut/decompose.png",plot=decomposition)
 
+####Holt-Winters exponential smoothing####
+library(forecast)
+holt_winters <- ets(log(flat_net_price), model="MMM")
+holt_winters
+accuracy(holt_winters)
 
+pred <- forecast(holt_winters, 5)
+pred
+plot(pred, main="HK Property",
+     ylab="Log(flat_net_price)", xlab="Time")
+
+pred$mean <- exp(pred$mean)
+pred$lower <- exp(pred$lower)
+pred$upper <- exp(pred$upper)
+p <- cbind(pred$mean, pred$lower, pred$upper)
+dimnames(p)[[2]] <- c("mean", "Lo 80", "Lo 95", "Hi 80", "Hi 95")
+p
+
+####Automated forecasting using ets() function####
+library(forecast)
+fit <- ets(flat_net_price)
+fit
+p<-plot(forecast(fit,6), main="Hong Kong Property Price",
+     ylab="Price", xlab="Time", flty=2)
+p
