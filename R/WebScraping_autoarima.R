@@ -40,7 +40,7 @@ hk_flat_net_price
 ggsave(filename="hk_flat_net_price.png",plot=hk_flat_net_price)
 
 
-####ARIMA Modelling
+####ARIMA Modelling####
 library(forecast)
 #input Training Data - df_train
 fit<-auto.arima(flat_net_price)
