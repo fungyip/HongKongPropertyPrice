@@ -18,7 +18,7 @@ names(net_price)[1]<-"net_price"
 
 #install.packages("dse")
 library(dse)
-starttime=c(1997,1);endtime=c(2016,8);freq=12
+starttime=c(1997,1);endtime=c(2016,9);freq=12
 flat_gross_price<-ts(gross_price,start=starttime,end=endtime,frequency=freq)
 plot(flat_gross_price)
 flat_net_price<-ts(net_price,start=starttime,end=endtime,frequency=freq)
