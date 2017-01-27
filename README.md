@@ -4,7 +4,6 @@ author: "Fung YIP"
 date: "21 Oct 2016"
 output:
   html_document: default
-  word_document: default
 ---
 
 
