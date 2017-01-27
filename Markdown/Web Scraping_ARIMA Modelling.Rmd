@@ -1,8 +1,10 @@
 ---
-title: "Web Scraping Hong Kong Property Price"
+title: "Web Scraping and Predictive Analytics HK Property Price using ARIMA Modelling"
 author: "Fung YIP"
-date: "14 August 2016"
-output: html_document
+date: "21 Oct 2016"
+output:
+  html_document: default
+  word_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -11,15 +13,16 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## 美聯物業樓價
 
-This handy R script is created to extract Hong Kong **Gross** and **Net** property prices from the Hong Kong Estate Agent Midland 美聯物業 <http://www.midland.com.hk/> for rapid machine learning.
+This handy R script is created to extract Hong Kong **Gross** and **Net** property prices from the Hong Kong Property Agency Midland 美聯物業 available on <http://proptx.midland.com.hk/mpp/main.jsp?lang=zh> for rapid machine learning.
 
 ### Data Collection
-Hong Kong Property Price Movement is sourced from Midland Realty
+Hong Kong Property Price Movement is sourced from Midland Realty available from 1997 onwards.
 ```{r url}
 url <- "http://resources.midland.com.hk/json/common/price.json?t="
 ```
 
 ### Web Scraping
+Read data from the above link in JSON format into R.
 ```{r WebScraping, echo=TRUE, message=FALSE, warning=FALSE}
 require(jsonlite)
 flat_data<-fromJSON(url)
@@ -42,7 +45,7 @@ names(gross_price)[1]<-"gross_price"
 Add Time dimension 
 ```{r time, echo=TRUE, message=FALSE, warning=FALSE}
 library(dse)
-starttime=c(1997,1);endtime=c(2016,7);freq=12
+starttime=c(1997,1);endtime=c(2016,9);freq=12
 flat_net_price<-ts(net_price,start=starttime,end=endtime,frequency=freq)
 flat_gross_price<-ts(gross_price,start=starttime,end=endtime,frequency=freq)
 ```
@@ -52,7 +55,7 @@ plot(flat_gross_price)
 plot(flat_net_price)
 ```
 
-###Data Visualization
+### Data Visualization
 Net Price 平均實用樓價
 ```{r DataVis, echo=TRUE, message=FALSE, warning=FALSE}
 library(zoo)
@@ -71,7 +74,33 @@ Export
 ggsave(filename="../DataOut/hk_flat_net_price.png",plot=hk_flat_net_price)
 ```
 
-###ARIMA Modelling
+### ARIMA Modelling
+According to the ARIMA model, Hong Kong property price is estimated to edge upwards given that other factors remain unchanged.
+
+ARIMA is a time series model that attempts to separate the signal from the noise and the signal is then extrapolated into the future to obtain forecasts.
+The model consist of lags of the dependent variable.
+
+A seasonal ARIMA model is classified as an "ARIMA(p,d,q)x(P,D,Q)" model, where:
+
+p is the number of autoregressive terms,
+
+d is the number of nonseasonal differences needed for stationarity,
+
+q is the number of lagged forecast errors in the prediction equation,
+
+P is the number of seasonal autoregressive terms,
+
+D is the number of seasonal differences,
+
+Q is the number of seasonal moving average terms.
+
+
+ARIMA Model is very common on financial analysis such as stock market. It can also apply to other area such as house price.
+Dr Raymond Tse published a paper called "An application of the ARIMA model to real-estate prices in Hong Kong." <http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.196.4606&rep=rep1&type=pdf>
+
+September 2016 witnessed the price reach above 10,000 price per square feet, which is the same level as last year Feb.
+
+
 ```{r ARIMA, echo=TRUE, message=FALSE, warning=FALSE}
 library(forecast)
 fit<-auto.arima(flat_net_price)
@@ -81,6 +110,6 @@ forecast_fit<-forecast(fit)
 plot(forecast_fit)
 ```
 
-
+Please note that the ARIMA Model is assumed other factors remain unchanged given that the US interest rate would remain the same while Hong Kong remains on track.  The Model also ignores the 20 years big cycle and 10 years minor cycle for the Hong Kong Property Market.
 
 
