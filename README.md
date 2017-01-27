@@ -1,9 +1,10 @@
 ---
-title: "Web Scraping and Predictive Analytics HK Property Price using ARIMA Modelling"
-author: "Fung YIP"
-date: "21 Oct 2016"
-output:
-  html_document: default
+Title: "Web Scraping and Predictive Analytics HK Property Price using ARIMA Modelling"
+Author: "Fung YIP"
+Date: "21 Oct 2016"
+Analytics:
+  Web Scraping: XML
+  Time Series: ARIMA Modelling
 ---
 
 
