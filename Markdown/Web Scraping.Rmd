@@ -5,10 +5,6 @@ date: "14 August 2016"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-
 ## 美聯物業樓價
 
 This handy R script is created to extract Hong Kong **Gross** and **Net** property prices from the Hong Kong Estate Agent Midland 美聯物業 <http://www.midland.com.hk/> for rapid machine learning.
@@ -18,6 +14,14 @@ Hong Kong Property Price Movement is sourced from Midland Realty
 ```{r url}
 url <- "http://resources.midland.com.hk/json/common/price.json?t="
 ```
+
+```{r library}
+library(readr)
+library(tidyverse)
+library(lubridate)
+```
+
+
 
 ### Web Scraping
 ```{r WebScraping, echo=TRUE, message=FALSE, warning=FALSE}
@@ -33,6 +37,19 @@ net_price<-as.data.frame(Price$values[[1]])
 gross_price<-as.data.frame(Price$values[[2]])
 ```
 
+```{r}
+data <- net_price %>% 
+  mutate(net_price = Price$values[[1]]) %>% 
+  mutate(gross_price = Price$values[[2]]) %>% 
+  mutate(date = seq(ymd('1997-01-01'),ymd('2017-11-01'), by = 'month')) %>% 
+  select(date, net_price, gross_price)
+```
+
+```{r dataout}
+write_csv(data, "../DataOut/hk_property_price.csv")
+```
+
+
 Variable Names
 ```{r names, echo=TRUE, message=FALSE, warning=FALSE}
 names(net_price)[1]<-"net_price"
@@ -42,10 +59,12 @@ names(gross_price)[1]<-"gross_price"
 Add Time dimension 
 ```{r time, echo=TRUE, message=FALSE, warning=FALSE}
 library(dse)
-starttime=c(1997,1);endtime=c(2016,7);freq=12
+#adjusts endtime using View(Period)
+starttime=c(1997,1);endtime=c(2017,11);freq=12
 flat_net_price<-ts(net_price,start=starttime,end=endtime,frequency=freq)
 flat_gross_price<-ts(gross_price,start=starttime,end=endtime,frequency=freq)
 ```
+
 
 ```{r plot, echo=TRUE, message=FALSE, warning=FALSE}
 plot(flat_gross_price)
