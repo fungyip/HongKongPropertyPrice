@@ -19,9 +19,12 @@ url <- "http://resources.midland.com.hk/json/common/price.json?t="
 library(readr)
 library(tidyverse)
 library(lubridate)
+library(timekit)
+library(ggplot2)
+library(forecast)
+library(sweep)
+library(zoo)
 ```
-
-
 
 ### Web Scraping
 ```{r WebScraping, echo=TRUE, message=FALSE, warning=FALSE}
@@ -45,45 +48,108 @@ data <- net_price %>%
   select(date, net_price, gross_price)
 ```
 
+```{r Chart}
+data %>%
+    ggplot(aes(date, net_price)) +
+    geom_line() +
+    scale_x_date(date_breaks = "2 year", date_labels = "%Y") +
+    labs(title = "Hong Kong Property Price: 1997 through 2017")
+```
+
+
 ```{r dataout}
 write_csv(data, "../DataOut/hk_property_price.csv")
 ```
 
-
-Variable Names
-```{r names, echo=TRUE, message=FALSE, warning=FALSE}
-names(net_price)[1]<-"net_price"
-names(gross_price)[1]<-"gross_price"
+Add Time dimension and select net price 
+```{r Add Time Dimension}
+data_ts <- data %>%
+  select(date, net_price) %>% 
+  tk_ts(start = c(1997,1), frequency = 12)
 ```
 
-Add Time dimension 
-```{r time, echo=TRUE, message=FALSE, warning=FALSE}
-library(dse)
-#adjusts endtime using View(Period)
-starttime=c(1997,1);endtime=c(2017,11);freq=12
-flat_net_price<-ts(net_price,start=starttime,end=endtime,frequency=freq)
-flat_gross_price<-ts(gross_price,start=starttime,end=endtime,frequency=freq)
+```{r ARIMA}
+# Model using auto.arima
+fit_arima <- data_ts %>% 
+  auto.arima
+fit_arima
+```
+
+#sw_tidy():Used to retrieve the model coefficients
+```{r}
+sw_glance(fit_arima) %>% 
+  glimpse()
+```
+
+#sw_glance(): Used to retrieve model description and training set accuracy metrics
+
+```{r}
+# sw_augment - get model residuals
+sw_augment(fit_arima, timetk_idx = TRUE)
+
 ```
 
 
-```{r plot, echo=TRUE, message=FALSE, warning=FALSE}
-plot(flat_gross_price)
-plot(flat_net_price)
+```{r}
+# Plotting residuals
+sw_augment(fit_arima, timetk_idx = TRUE) %>%
+    ggplot(aes(x = index, y = .resid)) +
+    geom_point() + 
+    geom_hline(yintercept = 0, color = "red") + 
+    labs(title = "Residual diagnostic") +
+    scale_x_date(date_breaks = "2 year", date_labels = "%Y") 
 ```
 
-###Data Visualization
-Net Price 平均實用樓價
-```{r DataVis, echo=TRUE, message=FALSE, warning=FALSE}
-library(zoo)
-library(ggplot2)
-library(scales)
 
-hk_flat_net_price<-autoplot(as.zoo(flat_net_price), geom = "line")+
-  xlab("Period") +
-  ylab("Net Price") 
-
-hk_flat_net_price
+```{r}
+# Forecast next 12 months
+fcast_arima <- forecast(fit_arima, h = 12)
+class(fcast_arima)
 ```
+
+```{r}
+# sw_sweep - tidies forecast output
+fcast_tbl <- sw_sweep(fcast_arima, timetk_idx = FALSE)
+fcast_tbl
+```
+
+
+```{r}
+# Visualize the forecast with ggplot
+fcast_tbl %>%
+    ggplot(aes(x = index, y = net_price, color = key)) +
+    # 95% CI
+    geom_ribbon(aes(ymin = lo.95, ymax = hi.95), 
+                fill = "#D5DBFF", color = NA, size = 0) +
+    # 80% CI
+    geom_ribbon(aes(ymin = lo.80, ymax = hi.80, fill = key), 
+                fill = "#596DD5", color = NA, size = 0, alpha = 0.8)+
+  geom_line()+
+  labs(title = "Hong Kong Property Price: 1997 through 2017")
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 Export
 ```{r DataOut, echo=TRUE, message=FALSE, warning=FALSE}
